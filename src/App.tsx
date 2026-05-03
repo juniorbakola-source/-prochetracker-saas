@@ -31,11 +31,21 @@ import { getFromLocal, saveToLocal } from './lib/supabase';
 type Screen = 'welcome' | 'profile' | 'group' | 'map' | 'settings';
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 10);
+  // Use Web Crypto API for a cryptographically random ID
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID().replace(/-/g, '').substring(0, 8);
+  }
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 function generateGroupCode(): string {
-  return Math.random().toString(36).substring(2, 6).toUpperCase();
+  // Unambiguous characters (no 0/O, 1/I/L) for easier manual entry
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('');
 }
 
 export default function App() {
